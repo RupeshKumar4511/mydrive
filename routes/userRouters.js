@@ -119,7 +119,7 @@ router.post('/login',[
 
 })
 
-router.post('/logout',(req,res)=>{
+router.get('/logout',(req,res)=>{
     res.clearCookie('token');
     res.send({message:"logout successfully.."})
 })
