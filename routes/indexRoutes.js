@@ -2,15 +2,16 @@ const express = require('express');
 // const methodOverride = require('method-override');
 const router = express.Router();
 const authemiddleware = require('../middlewares/authenticate');
-const {uploadToGridFS,upload,connectToDatabase} = require('../config/gridFS')
+const {uploadToGridFS,upload,connectToDatabase,closeDatabaseConnection} = require('../config/gridFS')
 const { GridFSBucket, ObjectId } = require('mongodb');
+require('dotenv').config()
 
 
 
 
 router.post('/upload', upload.single('file'), async (req, res) => {
-    console.log("file", req.file);
-    console.log("body", req.body);
+    // console.log("file", req.file);
+    // console.log("body", req.body);
     try {
       if (!req.file) {
         throw new Error('No file uploaded'); // Handle missing file
@@ -29,13 +30,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.get('/download/:filename', async (req, res) => {
     const client = await connectToDatabase();
     try {
-      const db = client.db("Drive");
+      const db = client.db(process.env.DATABASE);
       const bucket = new GridFSBucket(db, { bucketName: 'uploads' });
   
       const filename = req.params.filename;
   
       // Find the file by filename
       const file = await bucket.find({ filename: filename }).toArray();
+      //Uses GridFS's .find() to locate the file metadata.
   
       if (!file || file.length === 0) {
         return res.status(404).json({ message: 'File not found' });
@@ -47,15 +49,24 @@ router.get('/download/:filename', async (req, res) => {
       // Stream the file to the response
       const downloadStream = bucket.openDownloadStreamByName(filename);
       downloadStream.pipe(res);
+      // it automatically send response to client
   
       downloadStream.on('error', (err) => {
         console.error('Error streaming file:', err);
-        res.status(500).json({ message: 'Error streaming file' });
+        closeDatabaseConnection(client)
+        return res.status(500).json({ message: 'Error streaming file' });
       });
+
+      downloadStream.on('end',()=>{
+        closeDatabaseConnection(client)
+      })
+      
   
     } catch (error) {
       console.error('Error downloading file:', error);
+      closeDatabaseConnection(client)
       return res.status(500).json({ message: 'Error downloading file' });
+      
     }
   });
 

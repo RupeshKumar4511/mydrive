@@ -10,9 +10,14 @@
     />
   </head>
   <body class="w-full">
-    <%- include('../partials/header')  %>
+    <%- include('../partials/header') %>
 
-    <form action="/services/upload" method="post" enctype="multipart/form-data" class="flex flex-col w-full">
+    <form
+      action="/services/upload"
+      method="post"
+      enctype="multipart/form-data"
+      class="flex flex-col w-full"
+    >
       <div class="flex items-center justify-center md:w-96 md:mx-auto mt-4">
         <label
           for="dropzone-file"
@@ -57,8 +62,9 @@
     </form>
 
     <div class="mt-4 w-full">
-      <form id="form" class="flex items-center justify-center flex-col ">
-        Enter your File name to download : <input
+      <form id="form" class="flex items-center justify-center flex-col">
+        Enter your File name to download :
+        <input
           type="text"
           placeholder="Enter file name"
           name="dfile"
@@ -69,46 +75,41 @@
         /><br />
         <button
           type="submit"
-          class="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 "
-         id="formSubmit"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+          id="formSubmit"
         >
           Download File
         </button>
       </form>
     </div>
 
-    
     <script>
-      
-        document.getElementById("form").addEventListener('submit',async(e)=>{
-          e.preventDefault();
-          const filename = document.getElementById("dfile").value;
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const filename = document.getElementById("dfile").value;
 
-            if (filename !=='') {
-              let url = `/services/download/${filename}`;
-              const res = await fetch(url, {
-                method: "GET",
-              })
-              if(res.ok){
-                console.log("success");
-                const blob = await res.blob();
-          const downloadUrl = URL.createObjectURL(blob);
-          
-          const a = document.createElement('a');
-          a.href = downloadUrl;
-          a.download = filename;  // Suggests filename to the browser
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          
-          // Free memory
-          URL.revokeObjectURL(downloadUrl);
-      
-              }
-            }
-        })
-       
+        if (filename !== "") {
+          let url = `/services/download/${filename}`;
+          const res = await fetch(url, {
+            method: "GET",
+          });
+          if (res.ok) {
+            console.log("success");
+            const blob = await res.blob();
+            const downloadUrl = URL.createObjectURL(blob);
 
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = filename; // Suggests filename to the browser
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            // Free memory
+            URL.revokeObjectURL(downloadUrl);
+          }
+        }
+      });
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
